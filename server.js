@@ -17,7 +17,7 @@ const db = require('./db.js');
 
 // Creating all the tables defined in agency
 //db.sync()
-db.sync({ alter: true })
+db.sync({ alter: true }) //force : true
 
 let router = require('./routes');
 app.use("/", router);

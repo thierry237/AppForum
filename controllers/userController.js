@@ -1,9 +1,7 @@
 const db = require('../models/index');
 const User = db.User;
 
-
-
-
+//lister tous les utilisateurs
 exports.userList = async function (req, res) {
     await User.findAll()
         .then(data => {
@@ -15,6 +13,7 @@ exports.userList = async function (req, res) {
         })
 }
 
+//ajouter un utilisateur
 exports.userCreate = async (req, res) => {
     let user = User.build({
         lastname: req.body.lastname, firstname: req.body.firstname, username: req.body.username, email: req.body.email,
@@ -22,14 +21,15 @@ exports.userCreate = async (req, res) => {
     })
     await user.save()
         .then(data => {
+            res.status(200).json({ message: 'user added', data: user });
             console.log(user.toJSON());
-            res.json(data);
         })
         .catch(err => {
             res.status(500).json({ message: err.message })
         })
 }
 
+//modifier un utilisateur
 exports.userUpdate = async function (req, res) {
     if (req.params.idUser > 0) {
         await User.update(
@@ -41,7 +41,7 @@ exports.userUpdate = async function (req, res) {
         )
             .then(data => {
                 if (data[0] == 0) { res.status(400).json({ message: 'Not found' }) }
-                else res.json({ message: 'done' })
+                else res.json({ message: 'User updated' })
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })
@@ -50,12 +50,13 @@ exports.userUpdate = async function (req, res) {
     else res.status(400).json({ message: 'User not found' })
 }
 
+//supprimer un utilisateur
 exports.userDelete = async function (req, res) {
     if (req.params.idUser) {
         await User.destroy({ where: { idUser: req.params.idUser } })
             .then(data => {
-                if (data == 0) res.status(400).json({ message: 'Not found' });
-                else res.json({ message: 'done' })
+                if (data == 0) res.status(400).json({ message: 'User not found' });
+                else res.json({ message: 'User deleted' })
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })
@@ -64,6 +65,7 @@ exports.userDelete = async function (req, res) {
     else res.status(400).json({ message: 'User not found' })
 }
 
+//rechercher un utilisateur précis
 exports.userFindOne = async function (req, res) {
     if (req.params.idUser) {
         await User.findOne({ where: { idUser: req.params.idUser } })

@@ -1,18 +1,18 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, NOW } = require('sequelize');
 const sequelize = require('../db');
 
-const Post = sequelize.define('post', {
-    idPost: {
+const Course = sequelize.define('course', {
+    idCourse: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    title: {
+    name: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: false
     },
-    message: {
+    description: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: false
@@ -28,5 +28,5 @@ const Post = sequelize.define('post', {
     }
 );
 
-module.exports = Post;
+module.exports = Course;
 

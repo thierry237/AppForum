@@ -7,16 +7,6 @@ const Comment = sequelize.define('comment', {
         autoIncrement: true,
         primaryKey: true
     },
-    // idPost: {
-    //     type: DataTypes.INTEGER,
-    //     allowNull: false,
-    //     unique: false
-    // },
-    // idUser: {
-    //     type: DataTypes.INTEGER,
-    //     allowNull: false,
-    //     unique: false
-    // },
     comment: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -29,8 +19,8 @@ const Comment = sequelize.define('comment', {
         unique: false
     },
     createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
+        type: DataTypes.DATEONLY,
+        defaultValue: DataTypes.NOW,
         allowNull: false
     },
 },

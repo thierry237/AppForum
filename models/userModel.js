@@ -35,8 +35,8 @@ const User = sequelize.define('user', {
         allowNull: false
     },
     createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
+        type: DataTypes.DATEONLY,
+        defaultValue: DataTypes.NOW,
         allowNull: false
     },
     isAdmin: {
