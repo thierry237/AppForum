@@ -15,10 +15,18 @@ exports.commentList = async function (req, res) {
 }
 
 exports.commentCreate = async function (req, res) {
+    const { id_User } = req;
+    // const { id_Post } = req.params.idPost;
     let comment = Comment.build({
-        comment: req.body.comment, like: req.body.like, createdAt: req.body.createdAt, idUser: req.body.idUser,
+        comment: req.body.comment, like: req.body.like, idUser: id_User,
         idPost: req.body.idPost
     })
+    if (comment.comment == null) {
+        return res.status(400).json({ 'error': 'missing parameters' });
+    }
+    if (comment.comment.trim() == "") {
+        return res.status(400).json({ 'error': 'missing parameters' });
+    }
     await comment.save()
         .then(data => {
             console.log(comment.toJSON());
@@ -31,17 +39,28 @@ exports.commentCreate = async function (req, res) {
 }
 
 exports.commentUpdate = async function (req, res) {
+    const { id_User } = req;
+    let comment = Comment.build({
+        comment: req.body.comment, like: req.body.like, idUser: id_User,
+        idPost: req.body.idPost
+    })
     if (req.params.idComment > 0) {
+        if (comment.comment == null) {
+            return res.status(400).json({ 'error': 'missing parameters' });
+        }
+        if (comment.Comment.trim() == "") {
+            return res.status(400).json({ 'error': 'missing parameters' });
+        }
         await Comment.update(
             {
-                comment: req.body.comment, like: req.body.like, createdAt: req.body.createdAt, idUser: req.body.idUser,
-                idPost: req.body.idPost
+                comment: comment.comment, like: comment.like, idUser: comment.idUser,
+                idPost: comment.idPost
             },
             { where: { idComment: req.params.idComment } }
         )
             .then(data => {
                 if (data[0] == 0) { res.status(400).json({ message: 'Comment not found' }) }
-                else res.json({ message: 'done' })
+                else res.json({ message: 'Comment updated' })
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })

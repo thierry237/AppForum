@@ -25,10 +25,7 @@ const User = sequelize.define('user', {
     email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
-        validate: {
-            isEmail: true
-        }
+        unique: false
     },
     password: {
         type: DataTypes.STRING,
@@ -44,10 +41,9 @@ const User = sequelize.define('user', {
         defaultValue: false,
         allowNull: false
     },
-}
-    , {
-        timestamps: false
-    });
+}, {
 
+    timestamps: false
+});
 module.exports = User;
 

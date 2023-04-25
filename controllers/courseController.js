@@ -1,4 +1,5 @@
 const db = require('../models/index');
+const sequelize = require('sequelize');
 const Post = db.Post;
 const User = db.User;
 const Comment = db.Comment;
@@ -18,47 +19,75 @@ exports.courseList = async function (req, res) {
 
 exports.courseCreate = async function (req, res) {
     let course = Course.build({
-        name: req.body.name, description: req.body.description, createdAt: req.body.createdAt,
-        idPost: req.body.idPost
+        name: req.body.name, description: req.body.description
     })
+    if (course.name == null || course.description == null) {
+        return res.status(400).json({ 'error': 'missing parameters' })
+    }
+    if (course.name.trim() == "" || course.description.trim() == "") {
+        return res.status(400).json({ 'error': 'missing parameters " "' })
+    }
+    try {
+        const courseFound = await Course.findOne({ attributes: ['name'], where: { name: course.name } })
+        if (courseFound == null) {
+            await course.save();
+            // Récupérer l'ID de l'utilisateur connecté
+            const { id_User } = req;
+            let insert = Insert.build({
+                idCourse: course.idCourse,
+                idUser: id_User
+            });
+            await insert.save();
+            console.log(insert.toJSON());
+            res.json({ message: 'Course created successfully.', course });
+        }
+        else {
+            return res.status(409).json({ 'error': 'course already exists' });
+        }
 
-    let insert = Insert.build({
-        idCourse: req.body.idCourse, idUser: req.body.idUser
-    })
-    await course.save()
-        .then(data => {
-            console.log(course.toJSON());
-            res.json(data);
-        })
-        .catch(err => {
-            res.status(500).json({ message: err.message })
-        })
-
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 }
+
 
 exports.courseUpdate = async function (req, res) {
     if (req.params.idCourse > 0) {
-        await Course.update(
-            {
-                name: req.body.name, description: req.body.description, createdAt: req.body.createdAt,
-                idPost: req.body.idPost
-            },
-            { where: { idCourse: req.params.idCourse } }
-        )
-            .then(data => {
-                if (data[0] == 0) { res.status(400).json({ message: 'Course not found' }) }
-                else res.json({ message: 'done' })
-            })
-            .catch(err => {
-                res.status(500).json({ message: err.message })
-            })
+        let course = Course.build({
+            name: req.body.name, description: req.body.description
+        })
+        if (course.name == null || course.description == null) {
+            return res.status(400).json({ 'error': 'missing parameters' })
+        }
+        if (course.name.trim() == "" || course.description.trim() == "") {
+            return res.status(400).json({ 'error': 'missing parameters " "' })
+        }
+        const courseFound = await Course.findOne({ where: { name: course.name } })
+        if (courseFound == null) {
+            await Course.update(
+                {
+                    name: course.name, description: course.description
+                },
+                { where: { idCourse: req.params.idCourse } }
+            )
+                .then(data => {
+                    if (data[0] == 0) { res.status(400).json({ message: 'Course not found' }) }
+                    else res.json({ message: 'Course updated' })
+                })
+                .catch(err => {
+                    res.status(500).json({ message: err.message })
+                })
+        } else {
+            return res.status(409).json({ message: 'course already exists' });
+        }
+
     }
     else res.status(400).json({ message: 'Course not found' })
 }
 
 exports.courseDelete = async function (req, res) {
     if (req.params.idCourse) {
-        await Comment.destroy({ where: { idCourse: req.params.idCourse } })
+        await Course.destroy({ where: { idCourse: req.params.idCourse } })
             .then(data => {
                 if (data == 0) res.status(400).json({ message: 'Course not found' });
                 else res.json({ message: 'Course deleted' });
@@ -98,7 +127,7 @@ exports.commentFindOp = async function (req, res) {
         })
 }
 
-//afficher tous les commentaires liés à un post
+//afficher tous les posts d'un cours donné
 exports.listPostCourse = async function (req, res) {
     if (req.params.idCourse) {
         await Post.findAll({ where: { idCourse: req.params.idCourse } })
@@ -113,10 +142,10 @@ exports.listPostCourse = async function (req, res) {
     else res.status(400).json({ message: 'Post not found' })
 }
 
-//afficher tous les commentaires liés à un utilisateur
+//afficher tous les utilisateurs d'un cours
 exports.listUserCourse = async function (req, res) {
     if (req.params.idCourse) {
-        await User.findAll({ where: { idCourse: req.params.idCourse } })
+        await Course.findOne({ where: { idCourse: req.params.idCourse }, include: [{ model: User, through: { model: Insert, attributes: [] } }] })
             .then(data => {
                 console.log("All users:", JSON.stringify(data, null, 2));
                 res.json(data);
