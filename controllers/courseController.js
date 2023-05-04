@@ -1,5 +1,5 @@
 const db = require('../models/index');
-const sequelize = require('sequelize');
+const { sequelize, Op } = require('sequelize');
 const Post = db.Post;
 const User = db.User;
 const Comment = db.Comment;
@@ -22,10 +22,10 @@ exports.courseCreate = async function (req, res) {
         name: req.body.name, description: req.body.description
     })
     if (course.name == null || course.description == null) {
-        return res.status(400).json({ 'error': 'missing parameters' })
+        return res.status(400).json({ message: 'missing parameters' })
     }
     if (course.name.trim() == "" || course.description.trim() == "") {
-        return res.status(400).json({ 'error': 'missing parameters " "' })
+        return res.status(400).json({ message: 'missing parameters " "' })
     }
     try {
         const courseFound = await Course.findOne({ attributes: ['name'], where: { name: course.name } })
@@ -42,7 +42,7 @@ exports.courseCreate = async function (req, res) {
             res.json({ message: 'Course created successfully.', course });
         }
         else {
-            return res.status(409).json({ 'error': 'course already exists' });
+            return res.status(409).json({ message: 'course already exists' });
         }
 
     } catch (err) {
@@ -57,13 +57,22 @@ exports.courseUpdate = async function (req, res) {
             name: req.body.name, description: req.body.description
         })
         if (course.name == null || course.description == null) {
-            return res.status(400).json({ 'error': 'missing parameters' })
+            return res.status(400).json({ message: 'missing parameters' })
         }
         if (course.name.trim() == "" || course.description.trim() == "") {
-            return res.status(400).json({ 'error': 'missing parameters " "' })
+            return res.status(400).json({ message: 'missing parameters " "' })
         }
-        const courseFound = await Course.findOne({ where: { name: course.name } })
-        if (courseFound == null) {
+        const courseFound = await Course.findOne({ where: { idCourse: req.params.idCourse } })
+        const checkCourse = await Course.findAll({
+            where: {
+                name: course.name, idCourse: {
+                    [Op.not]: req.params.idCourse
+                }
+            }
+        })
+        console.log("chech", checkCourse);
+        console.log(courseFound);
+        if (checkCourse == false && (courseFound && courseFound.idCourse == parseInt(req.params.idCourse))) {
             await Course.update(
                 {
                     name: course.name, description: course.description
@@ -71,8 +80,7 @@ exports.courseUpdate = async function (req, res) {
                 { where: { idCourse: req.params.idCourse } }
             )
                 .then(data => {
-                    if (data[0] == 0) { res.status(400).json({ message: 'Course not found' }) }
-                    else res.json({ message: 'Course updated' })
+                    res.json({ message: 'Course updated' })
                 })
                 .catch(err => {
                     res.status(500).json({ message: err.message })

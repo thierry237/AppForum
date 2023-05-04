@@ -11,14 +11,14 @@ const auth = require('./authorization/authorization')
 router.get('/', (req, res) => res.redirect('/login'));
 
 //login
-router.get('/login', userController.loginUser);
+router.post('/login', userController.loginUser);
 
 //api utilisateurs
 router.get('/users', auth.isAuthorized, auth.isAdmin, userController.userList);
 router.post('/user', userController.userCreate);
 router.put('/user/:idUser', auth.isAuthorized, auth.isAuthorizedAdminUser, userController.userUpdate);
 router.delete('/user/:idUser', auth.isAuthorized, auth.isAuthorizedAdminUser, userController.userDelete);
-router.get('/user/:idUser', auth.isAuthorized, auth.isAuthorizedAdminUser, userController.userFindOne);
+router.get('/user/:idUser', auth.isAuthorized, userController.userFindOne);
 router.post('/user/filter', auth.isAuthorized, auth.isAdmin, userController.userFindOp);
 
 //api course

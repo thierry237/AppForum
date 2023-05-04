@@ -5,10 +5,10 @@ const bcrypt = require('bcrypt');
 
 //const
 const jwtKey = process.env.JWT_SECRET;
-const jwtExpirySeconds = 3600;
-const EMAIL_REGEX = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+const jwtExpirySeconds = 1800;
+const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 const PASSWORD_REGEX = /^.{4,8}$/
-const USERNAME_REGEX = /^[a-zA-Z0-9\-\.\+]{3,15}$/
+const USERNAME_REGEX = /^[a-zA-Z0-9\-\.\+\_\@\~\#]{3,15}$/
 
 //Get All users
 exports.userList = async function (req, res) {
@@ -37,13 +37,13 @@ exports.userCreate = async (req, res) => {
         return res.status(400).json({ 'error': 'missing parameters " "' })
     }
     if (!USERNAME_REGEX.test(user.username)) {
-        return res.status(400).json({ 'error': 'wrong username (must be length 3 - 14)' })
+        return res.status(400).json({ message: 'wrong username (must be length 3 - 14)' })
     }
     if (!EMAIL_REGEX.test(user.email)) {
-        return res.status(400).json({ 'error': 'email is not correct (must be aaaa@aaa.aaa)' })
+        return res.status(400).json({ message: 'email is not correct' })
     }
     if (!PASSWORD_REGEX.test(user.password)) {
-        return res.status(400).json({ 'error': 'passsword invalid (must be length 4 - 8)' })
+        return res.status(400).json({ message: 'passsword invalid (must be length 4 - 8)' })
     }
 
     try {
@@ -64,7 +64,7 @@ exports.userCreate = async (req, res) => {
                 'isAdmin': newUser.isAdmin
             });
         } else {
-            return res.status(409).json({ 'error': 'email already exists' });
+            return res.status(409).json({ message: 'email already exists' });
         }
     } catch (err) {
         return res.status(500).json({ message: err.message });
@@ -169,11 +169,14 @@ exports.loginUser = async function (req, res) {
         const checkPassword = bcrypt.compare(user.password, userFound.password);
         checkPassword.then((match) => {
             if (match) {
-                const token = jwt.sign({ idUser: userFound.idUser, isAdmin: userFound.isAdmin }, jwtKey, { expiresIn: jwtExpirySeconds });
+                const token = jwt.sign({ idUser: userFound.idUser, isAdmin: userFound.isAdmin, username: userFound.username }, jwtKey, { expiresIn: jwtExpirySeconds });
                 res.cookie('token', token, { httpOnly: true, secure: true, maxAge: jwtExpirySeconds * 1000 });
                 return res.status(200).json({
                     "idUser": userFound.idUser,
+                    "isAdmin": userFound.isAdmin,
+                    "username": userFound.username,
                     "token": token
+
                 });
             } else {
                 return res.status(400).json({ message: 'incorrect password' });

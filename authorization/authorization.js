@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const jwtKey = process.env.JWT_SECRET;
+const db = require('../models/index');
+const Post = db.Post;
 
 
 exports.isAuthorized = async function (req, res, next) {
@@ -10,7 +12,7 @@ exports.isAuthorized = async function (req, res, next) {
         // Here we validate that the JSON Web Token is valid 
         jwt.verify(token, jwtKey, (err, user) => {
             if (err) {
-                return res.status(500).json({ error: "Not Authorized" });
+                return res.status(401).json({ message: "Unauthorized" });
             }
             req.isAdmin = user.isAdmin;
             req.id_User = user.idUser;
@@ -21,14 +23,15 @@ exports.isAuthorized = async function (req, res, next) {
     } else {
         // No authorization header exists on the incoming
         // request, return not authorized and throw a new error 
-        return res.status(500).json({ error: "Not Authorized" });
+        return res.status(401).json({ message: "Unauthorized" });
     }
 }
 
 exports.isAuthorizedAdminUser = async function (req, res, next) {
     const { isAdmin, id_User } = req;
-    const { idUser } = req.params;
-    if (isAdmin || id_User === parseInt(idUser)) {
+    const { idPost } = req.params;
+    const post = await Post.findOne({ where: { idPost: idPost } });
+    if (isAdmin || id_User === post.idUser) {
         next();
     } else {
         return res.status(401).json({ message: 'Unauthorized' });

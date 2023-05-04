@@ -46,8 +46,7 @@ exports.postCreate = async function (req, res) {
 exports.postUpdate = async function (req, res) {
     if (req.params.idPost > 0) {
         let post = Post.build({
-            title: req.body.title, message: req.body.message,
-            idUser: id_User, idCourse: req.body.idCourse
+            title: req.body.title, message: req.body.message
         })
         if (post.title == null || post.message == null) {
             return res.status(400).json({ 'error': 'missing parameters' })
@@ -55,16 +54,15 @@ exports.postUpdate = async function (req, res) {
         if (post.title.trim() == "" || post.message.trim() == "") {
             return res.status(400).json({ 'error': 'missing parameters' })
         }
+
         await Post.update(
             {
-                title: post.title, message: post.message,
-                idUser: post.idUser, idCourse: post.idCourse
+                title: post.title, message: post.message
             },
             { where: { idPost: req.params.idPost } }
         )
             .then(data => {
-                if (data[0] == 0) { res.status(400).json({ message: 'Post not found' }) }
-                else res.json({ message: 'Post updated' })
+                res.json({ message: 'Post updated' })
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })
