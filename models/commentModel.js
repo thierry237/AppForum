@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
+const db = require('../models/index');
+const Post = db.Post;
 
 const Comment = sequelize.define('comment', {
     idComment: {
@@ -8,7 +10,7 @@ const Comment = sequelize.define('comment', {
         primaryKey: true
     },
     comment: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
         unique: false
     },
@@ -19,10 +21,10 @@ const Comment = sequelize.define('comment', {
         unique: false
     },
     createdAt: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         allowNull: false
-    },
+    }
 },
     {
         timestamps: false

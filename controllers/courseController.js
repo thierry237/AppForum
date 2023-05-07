@@ -121,11 +121,12 @@ exports.courseFindOne = async function (req, res) {
 }
 
 // const { Op } = require("sequelize");
-exports.commentFindOp = async function (req, res) {
+exports.courseFindOp = async function (req, res) {
     let params = {};
     Object.entries(req.body).forEach(([key, value]) => {
         params[key] = value;
     });
+
     await Course.findAll({ where: params })
         .then(data => {
             res.json(data);

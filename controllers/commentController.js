@@ -27,6 +27,7 @@ exports.commentCreate = async function (req, res) {
     if (comment.comment.trim() == "") {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
+
     await comment.save()
         .then(data => {
             console.log(comment.toJSON());
@@ -36,19 +37,21 @@ exports.commentCreate = async function (req, res) {
             res.status(500).json({ message: err.message })
         })
 
+
 }
+
 
 exports.commentUpdate = async function (req, res) {
     const { id_User } = req;
     let comment = Comment.build({
-        comment: req.body.comment, like: req.body.like, idUser: id_User,
-        idPost: req.body.idPost
+        comment: req.body.comment, like: req.body.like
+
     })
     if (req.params.idComment > 0) {
         if (comment.comment == null) {
             return res.status(400).json({ 'error': 'missing parameters' });
         }
-        if (comment.Comment.trim() == "") {
+        if (comment.comment.trim() == "") {
             return res.status(400).json({ 'error': 'missing parameters' });
         }
         await Comment.update(

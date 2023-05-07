@@ -1,6 +1,8 @@
 const db = require('../models/index');
 const jwt = require("jsonwebtoken");
 const User = db.User;
+const Post = db.Post;
+
 const bcrypt = require('bcrypt');
 
 //const
@@ -12,7 +14,7 @@ const USERNAME_REGEX = /^[a-zA-Z0-9\-\.\+\_\@\~\#]{3,15}$/
 
 //Get All users
 exports.userList = async function (req, res) {
-    await User.findAll({ attributes: ['lastname', 'firstname', 'username', 'email', 'password', 'createdAt'] })
+    await User.findAll({ attributes: ['idUser', 'lastname', 'firstname', 'username', 'email', 'password', 'createdAt', 'isAdmin'], include: [Post] })
         .then(data => {
             console.log("All users:", JSON.stringify(data, null, 2));
             res.json(data);
@@ -72,43 +74,86 @@ exports.userCreate = async (req, res) => {
 }
 
 
-//Update user
-exports.userUpdate = async function (req, res) {
-    if (req.params.idUser > 0) {
-        let user = User.build({
-            lastname: req.body.lastname, firstname: req.body.firstname, username: req.body.username, email: req.body.email,
-            password: req.body.password, isAdmin: req.body.isAdmin
-        })
-        if (user.lastname == null || user.firstname == null || user.username == null || user.email == null || user.password == null) {
-            return res.status(400).json({ 'error': 'missing parameters' })
-        }
-        if (user.username >= 15 || user.username <= 2) {
-            return res.status(400).json({ 'error': 'wrong username (must be length 3 - 14)' })
-        }
-        if (!EMAIL_REGEX.test(user.email)) {
-            return res.status(400).json({ 'error': 'email is not correct (must be aaaa@aaa.aaa)' })
-        }
-        if (!PASSWORD_REGEX.test(user.password)) {
-            return res.status(400).json({ 'error': 'passsword invalid (must be length 4 - 8)' })
-        }
-        const bcryptedPassword = await bcrypt.hash(user.password, 5);
-        await User.update(
-            {
-                lastname: user.lastname, firstname: user.firstname, username: user.username, email: user.email,
-                password: bcryptedPassword, isAdmin: user.isAdmin
-            },
-            { where: { idUser: req.params.idUser } }
-        )
-            .then(data => {
-                if (data[0] == 0) { res.status(400).json({ message: 'Not found' }) }
-                else res.json({ message: 'User updated' })
-            })
-            .catch(err => {
-                res.status(500).json({ message: err.message })
-            })
+
+exports.userUpdateAdmin = async function (req, res) {
+    const userId = req.params.idUser;
+    const { lastname, firstname, username, email, password, isAdmin } = req.body;
+
+    if (lastname == null || firstname == null || username == null || email == null || password == null) {
+        return res.status(400).json({ message: 'missing parameters' });
     }
-    else res.status(400).json({ message: 'User not found' })
-}
+
+    if (username.length < 3 || username.length > 14) {
+        return res.status(400).json({ message: 'wrong username (must be length 3 - 14)' });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+        return res.status(400).json({ message: 'email is not correct (must be aaaa@aaa.aaa)' });
+    }
+
+    try {
+        const [updatedRowsCount] = await User.update(
+            {
+                lastname,
+                firstname,
+                username,
+                email,
+                password,
+                isAdmin,
+            },
+            { where: { idUser: userId } }
+        );
+
+        if (updatedRowsCount === 0) {
+            return res.status(400).json({ message: 'Not found' });
+        }
+
+        return res.json({ message: 'User updated' });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+exports.userUpdate = async function (req, res) {
+    const userId = req.params.idUser;
+    const { lastname, firstname, username, email, password, isAdmin } = req.body;
+
+    if (lastname == null || firstname == null || username == null || email == null || password == null) {
+        return res.status(400).json({ message: 'missing parameters' });
+    }
+
+    if (username.length < 3 || username.length > 14) {
+        return res.status(400).json({ message: 'wrong username (must be length 3 - 14)' });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+        return res.status(400).json({ message: 'email is not correct (must be aaaa@aaa.aaa)' });
+    }
+    const bcryptedPassword = await bcrypt.hash(password, 5);
+
+    try {
+        const [updatedRowsCount] = await User.update(
+            {
+                lastname,
+                firstname,
+                username,
+                email,
+                password: bcryptedPassword,
+                isAdmin,
+            },
+            { where: { idUser: userId } }
+        );
+
+        if (updatedRowsCount === 0) {
+            return res.status(400).json({ message: 'Not found' });
+        }
+
+        return res.json({ message: 'User updated' });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 
 //Delete User
 exports.userDelete = async function (req, res) {
@@ -128,7 +173,7 @@ exports.userDelete = async function (req, res) {
 //search user
 exports.userFindOne = async function (req, res) {
     if (req.params.idUser) {
-        await User.findOne({ attributes: ['lastname', 'firstname', 'username', 'email', 'createdAt', 'isAdmin'], where: { idUser: req.params.idUser } })
+        await User.findOne({ where: { idUser: req.params.idUser } })
             .then(data => {
                 res.json(data);
             })

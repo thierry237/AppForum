@@ -2,6 +2,8 @@ const jwt = require("jsonwebtoken");
 const jwtKey = process.env.JWT_SECRET;
 const db = require('../models/index');
 const Post = db.Post;
+const Comment = db.Comment;
+const User = db.User;
 
 
 exports.isAuthorized = async function (req, res, next) {
@@ -27,11 +29,33 @@ exports.isAuthorized = async function (req, res, next) {
     }
 }
 
-exports.isAuthorizedAdminUser = async function (req, res, next) {
+exports.isAuthorizedAdminUserPost = async function (req, res, next) {
     const { isAdmin, id_User } = req;
     const { idPost } = req.params;
     const post = await Post.findOne({ where: { idPost: idPost } });
     if (isAdmin || id_User === post.idUser) {
+        next();
+    } else {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+}
+
+exports.isAuthorizedAdminUserComment = async function (req, res, next) {
+    const { isAdmin, id_User } = req;
+    const { idComment } = req.params;
+    const comment = await Comment.findOne({ where: { idComment: idComment } });
+    if (isAdmin || id_User === comment.idUser) {
+        next();
+    } else {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+}
+
+exports.isAuthorizedAdminUser = async function (req, res, next) {
+    const { isAdmin, id_User } = req;
+    const { idUser } = req.params;
+    const user = await User.findOne({ where: { idUser: idUser } });
+    if (isAdmin || id_User === user.idUser) {
         next();
     } else {
         return res.status(401).json({ message: 'Unauthorized' });
