@@ -10,7 +10,7 @@ exports.postList = async function (req, res) {
     await Post.findAll({ include: [User, Course, Comment] })
         .then(data => {
             console.log("All Posts:", JSON.stringify(data, null, 2));
-            res.json(data);
+            res.status(200).json(data);
         })
         .catch(err => {
             res.status(500).json({ message: err.message })
@@ -34,7 +34,7 @@ exports.postCreate = async function (req, res) {
     await post.save()
         .then(data => {
             console.log(post.toJSON());
-            res.json(data);
+            res.status(200).json(data);
         })
         .catch(err => {
             res.status(500).json({ message: err.message })
@@ -62,7 +62,7 @@ exports.postUpdate = async function (req, res) {
             { where: { idPost: req.params.idPost } }
         )
             .then(data => {
-                res.json({ message: 'Post updated' })
+                res.status(200).json({ message: 'Post updated' })
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })
@@ -77,7 +77,7 @@ exports.postDelete = async function (req, res) {
         await Post.destroy({ where: { idPost: req.params.idPost } })
             .then(data => {
                 if (data == 0) res.status(400).json({ message: 'Post not found' });
-                else res.json({ message: "Post deleted" });
+                else res.status(200).json({ message: "Post deleted" });
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })

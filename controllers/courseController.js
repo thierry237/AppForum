@@ -10,7 +10,7 @@ exports.courseList = async function (req, res) {
     await Course.findAll({ include: [User, Post] })
         .then(data => {
             console.log("All Courses:", JSON.stringify(data, null, 2));
-            res.json(data);
+            res.status(200).json(data);
         })
         .catch(err => {
             res.status(500).json({ message: err.message })
@@ -39,9 +39,10 @@ exports.courseCreate = async function (req, res) {
             });
             await insert.save();
             console.log(insert.toJSON());
-            res.json({ message: 'Course created successfully.', course });
+            res.status(200).json({ message: 'Course created successfully.', course });
         }
         else {
+            console.log("existe");
             return res.status(409).json({ message: 'course already exists' });
         }
 
@@ -80,7 +81,7 @@ exports.courseUpdate = async function (req, res) {
                 { where: { idCourse: req.params.idCourse } }
             )
                 .then(data => {
-                    res.json({ message: 'Course updated' })
+                    res.status(200).json({ message: 'Course updated' })
                 })
                 .catch(err => {
                     res.status(500).json({ message: err.message })
@@ -111,7 +112,7 @@ exports.courseFindOne = async function (req, res) {
     if (req.params.idCourse) {
         await Course.findOne({ where: { idCourse: req.params.idCourse }, include: [User, Post] })
             .then(data => {
-                res.json(data);
+                res.status(200).json(data);
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })
@@ -142,7 +143,7 @@ exports.listPostCourse = async function (req, res) {
         await Post.findAll({ where: { idCourse: req.params.idCourse } })
             .then(data => {
                 console.log("All Posts:", JSON.stringify(data, null, 2));
-                res.json(data);
+                res.status(200).json(data);
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })

@@ -120,7 +120,7 @@ exports.listCommentPost = async function (req, res) {
         await Comment.findAll({ where: { idPost: req.params.idPost } })
             .then(data => {
                 console.log("All Comments:", JSON.stringify(data, null, 2));
-                res.json(data);
+                res.status(200).json(data);
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })

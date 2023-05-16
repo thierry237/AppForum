@@ -10,7 +10,7 @@ const jwtKey = process.env.JWT_SECRET;
 const jwtExpirySeconds = 1800;
 const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 const PASSWORD_REGEX = /^.{4,8}$/
-const USERNAME_REGEX = /^[a-zA-Z0-9\-\.\+\_\@\~\#]{3,15}$/
+const USERNAME_REGEX = /^.{3,15}$/
 
 //Get All users
 exports.userList = async function (req, res) {
@@ -67,6 +67,7 @@ exports.userCreate = async (req, res) => {
             });
         } else {
             return res.status(409).json({ message: 'email already exists' });
+
         }
     } catch (err) {
         return res.status(500).json({ message: err.message });
@@ -129,6 +130,7 @@ exports.userUpdate = async function (req, res) {
     if (!EMAIL_REGEX.test(email)) {
         return res.status(400).json({ message: 'email is not correct (must be aaaa@aaa.aaa)' });
     }
+
     const bcryptedPassword = await bcrypt.hash(password, 5);
 
     try {
@@ -161,7 +163,7 @@ exports.userDelete = async function (req, res) {
         await User.destroy({ where: { idUser: req.params.idUser } })
             .then(data => {
                 if (data == 0) res.status(400).json({ message: 'User not found' });
-                else res.json({ message: 'User deleted' })
+                else res.status(200).json({ message: 'User deleted' })
             })
             .catch(err => {
                 res.status(500).json({ message: err.message })
@@ -210,6 +212,7 @@ exports.loginUser = async function (req, res) {
     });
 
     const userFound = await User.findOne({ where: { email: user.email } });
+    console.log(userFound);
     if (userFound) {
         const checkPassword = bcrypt.compare(user.password, userFound.password);
         checkPassword.then((match) => {
