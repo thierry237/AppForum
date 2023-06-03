@@ -71,8 +71,6 @@ exports.courseUpdate = async function (req, res) {
                 }
             }
         })
-        console.log("chech", checkCourse);
-        console.log(courseFound);
         if (checkCourse == false && (courseFound && courseFound.idCourse == parseInt(req.params.idCourse))) {
             await Course.update(
                 {

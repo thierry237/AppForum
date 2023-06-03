@@ -21,7 +21,7 @@ const Comment = sequelize.define('comment', {
         unique: false
     },
     createdAt: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         allowNull: false
     }

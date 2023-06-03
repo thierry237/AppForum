@@ -30,24 +30,24 @@ router.put('/course/:idCourse', auth.isAuthorized, auth.isAdmin, courseControlle
 router.delete('/course/:idCourse', auth.isAuthorized, auth.isAdmin, courseController.courseDelete);
 router.get('/course/:idCourse', auth.isAuthorized, courseController.courseFindOne);
 router.get('/course/:idCourse/posts', auth.isAuthorized, courseController.listPostCourse);
-router.get('/course/:idCourse/users', auth.isAuthorized, courseController.listUserCourse);
+router.get('/course/:idCourse/users', auth.isAuthorized, courseController.listUserCourse); //pas fait
 router.post('/course/search', auth.isAuthorized, courseController.courseFindOp);
 
 //api posts
-router.get('/posts', auth.isAuthorized, postController.postList);
+router.get('/posts', auth.isAuthorized, postController.postList); //pas fait
 router.post('/post', auth.isAuthorized, postController.postCreate);
 router.put('/post/:idPost', auth.isAuthorized, auth.isAuthorizedAdminUserPost, postController.postUpdate);
 router.delete('/post/:idPost', auth.isAuthorized, auth.isAuthorizedAdminUserPost, postController.postDelete);
 router.get('/post/:idPost', auth.isAuthorized, postController.postFindOne);
-router.get('/user/:idUser/posts', auth.isAuthorized, postController.listPostUser);
-router.delete('/user/:idUser/posts', auth.isAuthorized, auth.isAdmin, postController.deleteAllPostUser);
+router.get('/user/:idUser/posts', auth.isAuthorized, postController.listPostUser); //pas fait 
+router.delete('/user/:idUser/posts', auth.isAuthorized, auth.isAdmin, postController.deleteAllPostUser); // pas fait
 // router.get('/post/:idPost/comments', auth.isAuthorized, postController.allCommentPost); //idem
-router.get('/post/:idPost/users', auth.isAuthorized, postController.listUsersPost);
+router.get('/post/:idPost/users', auth.isAuthorized, postController.listUsersPost); //pas fait
 router.post('/post/search', auth.isAuthorized, postController.postFindOp);
 
 
 //api Comments
-router.get('/comments', auth.isAuthorized, commentController.commentList);
+router.get('/comments', auth.isAuthorized, commentController.commentList); //pas fait
 router.post('/comment', auth.isAuthorized, commentController.commentCreate);
 router.put('/comment/:idComment', auth.isAuthorized, auth.isAuthorizedAdminUserComment, commentController.commentUpdate);
 router.delete('/comment/:idComment', auth.isAuthorized, auth.isAuthorizedAdminUserComment, commentController.commentDelete);

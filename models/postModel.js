@@ -18,7 +18,7 @@ const Post = sequelize.define('post', {
         unique: false
     },
     createdAt: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         allowNull: false
     },

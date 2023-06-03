@@ -130,9 +130,19 @@ exports.userUpdate = async function (req, res) {
     if (!EMAIL_REGEX.test(email)) {
         return res.status(400).json({ message: 'email is not correct (must be aaaa@aaa.aaa)' });
     }
+    const userFound = await User.findOne({ where: { idUser: userId } });
 
-    const bcryptedPassword = await bcrypt.hash(password, 5);
-
+    let bcryptedPassword;
+    if (password === 'edit') {
+        bcryptedPassword = userFound.password;
+    } else {
+        const checkPassword = await bcrypt.compare(password, userFound.password);
+        if (!checkPassword) {
+            bcryptedPassword = await bcrypt.hash(password, 5);
+        } else {
+            bcryptedPassword = userFound.password;
+        }
+    }
     try {
         const [updatedRowsCount] = await User.update(
             {
@@ -145,7 +155,7 @@ exports.userUpdate = async function (req, res) {
             },
             { where: { idUser: userId } }
         );
-
+        console.log(updatedRowsCount);
         if (updatedRowsCount === 0) {
             return res.status(400).json({ message: 'Not found' });
         }
@@ -194,7 +204,7 @@ exports.userFindOp = async function (req, res) {
         params[key] = value;
 
     });
-    await User.findAll({ attributes: ['lastname', 'firstname', 'username', 'email', 'createdAt'], where: params })
+    await User.findAll({ attributes: ['idUser', 'lastname', 'firstname', 'username', 'email', 'createdAt', 'isAdmin'], where: params })
         .then(data => {
             res.json(data);
         })
