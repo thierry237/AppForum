@@ -3,6 +3,8 @@ const Post = db.Post;
 const User = db.User;
 const Comment = db.Comment;
 
+
+//liste tous les commentaires
 exports.commentList = async function (req, res) {
     await Comment.findAll({ include: [User, Post] })
         .then(data => {
@@ -14,20 +16,25 @@ exports.commentList = async function (req, res) {
         })
 }
 
+
+//ajouter un commentaire
 exports.commentCreate = async function (req, res) {
+    //on récupère l'identifiant de l'utilisateur
     const { id_User } = req;
     // const { id_Post } = req.params.idPost;
     let comment = Comment.build({
         comment: req.body.comment, like: req.body.like, idUser: id_User,
         idPost: req.body.idPost
     })
+
+    // Vérifier si les paramètres requis sont présents et valides
     if (comment.comment == null) {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
     if (comment.comment.trim() == "") {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
-
+    // Enregistrer le commentaire dans la base de données
     await comment.save()
         .then(data => {
             console.log(comment.toJSON());
@@ -37,16 +44,16 @@ exports.commentCreate = async function (req, res) {
             res.status(500).json({ message: err.message })
         })
 
-
 }
 
-
+//modifier un commentaire
 exports.commentUpdate = async function (req, res) {
     const { id_User } = req;
     let comment = Comment.build({
         comment: req.body.comment, like: req.body.like
 
     })
+    // Vérifier si les paramètres requis sont présents et valides
     if (req.params.idComment > 0) {
         if (comment.comment == null) {
             return res.status(400).json({ 'error': 'missing parameters' });
@@ -54,6 +61,7 @@ exports.commentUpdate = async function (req, res) {
         if (comment.comment.trim() == "") {
             return res.status(400).json({ 'error': 'missing parameters' });
         }
+        //modification en BD
         await Comment.update(
             {
                 comment: comment.comment, like: comment.like, idUser: comment.idUser,
@@ -72,6 +80,7 @@ exports.commentUpdate = async function (req, res) {
     else res.status(400).json({ message: 'Comment not found' })
 }
 
+//supprimer un commentaire
 exports.commentDelete = async function (req, res) {
     if (req.params.idComment) {
         await Comment.destroy({ where: { idComment: req.params.idComment } })
@@ -86,6 +95,7 @@ exports.commentDelete = async function (req, res) {
     else res.status(400).json({ message: 'Comment not found' })
 }
 
+//afficher un commentaire précis
 exports.commentFindOne = async function (req, res) {
     if (req.params.idComment) {
         await Comment.findOne({ where: { idComment: req.params.idComment }, include: [User, Post] })
@@ -99,6 +109,7 @@ exports.commentFindOne = async function (req, res) {
     else res.status(400).json({ message: 'Comment not found' })
 }
 
+//rechercher un commentaire
 // const { Op } = require("sequelize");
 exports.commentFindOp = async function (req, res) {
     let params = {};

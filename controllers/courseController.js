@@ -6,6 +6,7 @@ const Comment = db.Comment;
 const Course = db.Course;
 const Insert = db.Insert;
 
+//afficher tous les cours
 exports.courseList = async function (req, res) {
     await Course.findAll({ include: [User, Post] })
         .then(data => {
@@ -17,6 +18,7 @@ exports.courseList = async function (req, res) {
         })
 }
 
+//ajouter un cours 
 exports.courseCreate = async function (req, res) {
     let course = Course.build({
         name: req.body.name, description: req.body.description
@@ -50,27 +52,32 @@ exports.courseCreate = async function (req, res) {
     }
 }
 
-
+//modifier un cours
 exports.courseUpdate = async function (req, res) {
     if (req.params.idCourse > 0) {
         let course = Course.build({
             name: req.body.name, description: req.body.description
         })
+        // Vérifier si les paramètres requis sont présents et valides
         if (course.name == null || course.description == null) {
             return res.status(400).json({ message: 'missing parameters' })
         }
         if (course.name.trim() == "" || course.description.trim() == "") {
             return res.status(400).json({ message: 'missing parameters " "' })
         }
+        // Rechercher le cours existant à mettre à jour
         const courseFound = await Course.findOne({ where: { idCourse: req.params.idCourse } })
+        // Vérifier si un autre cours existe déjà avec le même nom (sauf pour le cours en cours de mise à jour)
         const checkCourse = await Course.findAll({
             where: {
                 name: course.name, idCourse: {
-                    [Op.not]: req.params.idCourse
+                    [Op.not]: req.params.idCourse // exclure un cours dans la recherche
                 }
             }
         })
+        // Si aucun autre cours avec le même nom n'est trouvé et le cours existant correspond à l'ID spécifié
         if (checkCourse == false && (courseFound && courseFound.idCourse == parseInt(req.params.idCourse))) {
+            // Mettre à jour les informations du cours dans la base de données
             await Course.update(
                 {
                     name: course.name, description: course.description
@@ -84,13 +91,16 @@ exports.courseUpdate = async function (req, res) {
                     res.status(500).json({ message: err.message })
                 })
         } else {
+            // Si un autre cours avec le même nom existe déjà, renvoyer une réponse avec un statut 409 (Conflit)
             return res.status(409).json({ message: 'course already exists' });
         }
 
     }
+    // Si l'ID du cours n'est pas valide, renvoyer une réponse avec un statut 400 (Mauvaise requête)
     else res.status(400).json({ message: 'Course not found' })
 }
 
+// supprimer un cours
 exports.courseDelete = async function (req, res) {
     if (req.params.idCourse) {
         await Course.destroy({ where: { idCourse: req.params.idCourse } })
@@ -105,6 +115,7 @@ exports.courseDelete = async function (req, res) {
     else res.status(400).json({ message: 'Course not found' })
 }
 
+//afficher un cours précis
 exports.courseFindOne = async function (req, res) {
     if (req.params.idCourse) {
         await Course.findOne({ where: { idCourse: req.params.idCourse }, include: [User, Post] })
@@ -118,13 +129,15 @@ exports.courseFindOne = async function (req, res) {
     else res.status(400).json({ message: 'Course not found' })
 }
 
+//rechercher un cours 
 // const { Op } = require("sequelize");
 exports.courseFindOp = async function (req, res) {
     let params = {};
+    // Parcourir les paires clé-valeur du corps de la requête et les ajouter à l'objet params
     Object.entries(req.body).forEach(([key, value]) => {
         params[key] = value;
     });
-
+    // Rechercher les cours correspondants aux paramètres spécifiés, en incluant les associations avec les modèles User et Post
     await Course.findAll({ where: params, include: [User, Post] })
         .then(data => {
             console.log("All Courses:", JSON.stringify(data, null, 2));

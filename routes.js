@@ -46,7 +46,7 @@ router.post('/post/search', auth.isAuthorized, postController.postFindOp);
 
 
 //api Comments
-router.get('/comments', auth.isAuthorized, commentController.commentList);
+router.get('/comments', auth.isAuthorized, commentController.commentList); //
 router.post('/comment', auth.isAuthorized, commentController.commentCreate);
 router.put('/comment/:idComment', auth.isAuthorized, auth.isAuthorizedAdminUserComment, commentController.commentUpdate);
 router.delete('/comment/:idComment', auth.isAuthorized, auth.isAuthorizedAdminUserComment, commentController.commentDelete);

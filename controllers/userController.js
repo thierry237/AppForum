@@ -12,7 +12,7 @@ const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 const PASSWORD_REGEX = /^.{4,8}$/
 const USERNAME_REGEX = /^.{3,15}$/
 
-//Get All users
+//afficher tous les utilisateurs
 exports.userList = async function (req, res) {
     await User.findAll({ attributes: ['idUser', 'lastname', 'firstname', 'username', 'email', 'password', 'createdAt', 'isAdmin'], include: [Post] })
         .then(data => {
@@ -24,13 +24,14 @@ exports.userList = async function (req, res) {
         })
 }
 
-//Add User
+//ajouter un utilisateur
 exports.userCreate = async (req, res) => {
 
     let user = User.build({
         lastname: req.body.lastname, firstname: req.body.firstname, username: req.body.username, email: req.body.email,
         password: req.body.password, isAdmin: req.body.isAdmin
     })
+    // Vérifier si les champs requis sont présents
     if (user.lastname == null || user.firstname == null || user.username == null || user.email == null || user.password == null) {
         return res.status(400).json({ 'error': 'missing parameters' })
 
@@ -49,9 +50,12 @@ exports.userCreate = async (req, res) => {
     }
 
     try {
+        // Vérifier si l'adresse email existe déjà dans la base de données
         const userFound = await User.findOne({ attributes: ['email'], where: { email: user.email } });
         if (userFound == null) {
+            // Hasher le mot de passe avant de le sauvegarder
             const bcryptedPassword = await bcrypt.hash(user.password, 5);
+            // Créer un nouvel utilisateur avec les informations fournies
             const newUser = await User.create({
                 lastname: user.lastname,
                 firstname: user.firstname,
@@ -75,11 +79,11 @@ exports.userCreate = async (req, res) => {
 }
 
 
-
+//Définir un utilisateur comme administrateur
 exports.userUpdateAdmin = async function (req, res) {
     const userId = req.params.idUser;
     const { lastname, firstname, username, email, password, isAdmin } = req.body;
-
+    // Vérifier si les champs requis sont présents
     if (lastname == null || firstname == null || username == null || email == null || password == null) {
         return res.status(400).json({ message: 'missing parameters' });
     }
@@ -115,6 +119,7 @@ exports.userUpdateAdmin = async function (req, res) {
     }
 };
 
+//modifier les données d'un utilisateur
 exports.userUpdate = async function (req, res) {
     const userId = req.params.idUser;
     const { lastname, firstname, username, email, password, isAdmin } = req.body;
@@ -167,7 +172,7 @@ exports.userUpdate = async function (req, res) {
 };
 
 
-//Delete User
+//supprimer l'utilisateur
 exports.userDelete = async function (req, res) {
     if (req.params.idUser) {
         await User.destroy({ where: { idUser: req.params.idUser } })
@@ -182,7 +187,7 @@ exports.userDelete = async function (req, res) {
     else res.status(400).json({ message: 'User not found' })
 }
 
-//search user
+//cafficher les informations d'un utilisateur précis
 exports.userFindOne = async function (req, res) {
     if (req.params.idUser) {
         await User.findOne({ where: { idUser: req.params.idUser } })
@@ -197,7 +202,7 @@ exports.userFindOne = async function (req, res) {
 }
 
 // const { Op } = require("sequelize");
-//find with parameters
+//chercher un utilisateur avec des paramètres
 exports.userFindOp = async function (req, res) {
     let params = {};
     Object.entries(req.body).forEach(([key, value]) => {
@@ -214,21 +219,25 @@ exports.userFindOp = async function (req, res) {
 }
 
 
-//connect and generate token
+//connexion et génération d'un token
 exports.loginUser = async function (req, res) {
     let user = User.build({
         email: req.body.email,
         password: req.body.password
     });
-
+    // Rechercher l'utilisateur dans la base de données en utilisant l'adresse email fournie
     const userFound = await User.findOne({ where: { email: user.email } });
     console.log(userFound);
     if (userFound) {
+        // Comparer le mot de passe fourni avec le mot de passe hashé stocké dans la base de données
         const checkPassword = bcrypt.compare(user.password, userFound.password);
         checkPassword.then((match) => {
             if (match) {
+                // Si le mot de passe correspond, générer un jeton d'authentification (JSON Web Token)
                 const token = jwt.sign({ idUser: userFound.idUser, isAdmin: userFound.isAdmin, username: userFound.username }, jwtKey, { expiresIn: jwtExpirySeconds });
+                // Stocker le jeton dans un cookie sécurisé
                 res.cookie('token', token, { httpOnly: true, secure: true, maxAge: jwtExpirySeconds * 1000 });
+                // Renvoyer les informations de l'utilisateur et le jeton d'authentification
                 return res.status(200).json({
                     "idUser": userFound.idUser,
                     "isAdmin": userFound.isAdmin,

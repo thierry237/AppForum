@@ -5,13 +5,13 @@ const Post = db.Post;
 const Comment = db.Comment;
 const User = db.User;
 
-
+// autorisation liée à la connexion
 exports.isAuthorized = async function (req, res, next) {
     if (typeof req.headers.authorization !== "undefined") {
-        // retrieve the authorization header and parse out the
-        // JWT using the split function
+        // Vérifier si l'en-tête d'autorisation existe
+        // et diviser le JWT en utilisant la fonction split
         let token = req.headers.authorization.split(" ")[1];
-        // Here we validate that the JSON Web Token is valid 
+        //nous vérifions que le JSON Web Token est valide
         jwt.verify(token, jwtKey, (err, user) => {
             if (err) {
                 return res.status(401).json({ message: "Unauthorized" });
@@ -23,15 +23,16 @@ exports.isAuthorized = async function (req, res, next) {
 
         });
     } else {
-        // No authorization header exists on the incoming
-        // request, return not authorized and throw a new error 
         return res.status(401).json({ message: "Unauthorized" });
     }
 }
 
+// utiliser pour vérifier si l'utilisateur est autorisé à effectuer une action sur un post
 exports.isAuthorizedAdminUserPost = async function (req, res, next) {
     const { isAdmin, id_User } = req;
     const { idPost } = req.params;
+
+    // Rechercher le post correspondant à l'idPost spécifié
     const post = await Post.findOne({ where: { idPost: idPost } });
     if (isAdmin || id_User === post.idUser) {
         next();
@@ -40,6 +41,7 @@ exports.isAuthorizedAdminUserPost = async function (req, res, next) {
     }
 }
 
+//utiliser pour vérifier si l'utilisateur est autorisé à effectuer une action sur un commentaire
 exports.isAuthorizedAdminUserComment = async function (req, res, next) {
     const { isAdmin, id_User } = req;
     const { idComment } = req.params;
@@ -51,6 +53,8 @@ exports.isAuthorizedAdminUserComment = async function (req, res, next) {
     }
 }
 
+
+//utiliser pour vérifier si l'utilisateur est autorisé à effectuer une action sur un utilisateur
 exports.isAuthorizedAdminUser = async function (req, res, next) {
     const { isAdmin, id_User } = req;
     const { idUser } = req.params;
@@ -62,6 +66,7 @@ exports.isAuthorizedAdminUser = async function (req, res, next) {
     }
 }
 
+//utiliser pour tester si on est admin
 exports.isAdmin = async function (req, res, next) {
     const { isAdmin } = req;
     console.log(isAdmin);
