@@ -7,7 +7,7 @@ const Comment = db.Comment;
 
 //afficher tous les posts
 exports.postList = async function (req, res) {
-    await Post.findAll({ include: [User, Course, Comment] })
+    await Post.findAll({ include: [User, Comment] })
         .then(data => {
             console.log("All Posts:", JSON.stringify(data, null, 2));
             res.status(200).json(data);

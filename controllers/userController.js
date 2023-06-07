@@ -7,7 +7,7 @@ const bcrypt = require('bcrypt');
 
 //const
 const jwtKey = process.env.JWT_SECRET;
-const jwtExpirySeconds = 1800;
+const jwtExpirySeconds = 3600;
 const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 const PASSWORD_REGEX = /^.{4,8}$/
 const USERNAME_REGEX = /^.{3,15}$/

@@ -42,7 +42,6 @@ exports.courseCreate = async function (req, res) {
             res.status(200).json({ message: 'Course created successfully.', course });
         }
         else {
-            console.log("existe");
             return res.status(409).json({ message: 'course already exists' });
         }
 
@@ -126,9 +125,10 @@ exports.courseFindOp = async function (req, res) {
         params[key] = value;
     });
 
-    await Course.findAll({ where: params })
+    await Course.findAll({ where: params, include: [User, Post] })
         .then(data => {
-            res.json(data);
+            console.log("All Courses:", JSON.stringify(data, null, 2));
+            res.status(200).json(data);
         })
         .catch(err => {
             res.status(500).json({ message: err.message })
